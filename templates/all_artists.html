@@ -1,0 +1,13 @@
+How to fill in an unordered list here to show artists and how many songs they have?
+
+{% if not artist_names %}
+There are no saved artists to show.
+{% endif %}
+
+<div>
+{% for message in get_flashed_messages() %}
+<strong>*** {{ message }} ***</strong>
+{% endfor %}
+</div>
+
+<a href="{{ url_for('index')}}">Return to add another song</a>
