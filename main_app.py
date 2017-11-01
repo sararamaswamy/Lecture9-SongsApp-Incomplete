@@ -12,7 +12,9 @@ from flask_sqlalchemy import SQLAlchemy
 # from flask_sqlalchemy import relationship, backref
 
 # from flask_migrate import Migrate, MigrateCommand # needs: pip/pip3 install flask-migrate
-
+##finish tempalte and finish the view function
+## template to show all the artists and the number of songs they've written
+## the rest of the view function necessary for the /all_songs route (but we've provided the all_song.html template)
 # Configure base directory of app
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -23,6 +25,8 @@ app.config['SECRET_KEY'] = 'hard to guess string from si364 (thisisnotsupersecur
 # app.config['SQLALCHEMY_DATABASE_URI'] =\
     # 'sqlite:///' + os.path.join(basedir, 'data.sqlite') # Determining where your database file will be stored, and what it will be called, with SQLite
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://localhost/songs_data" #TODO: Database URI that's been created - need to create a database called songs_data to make this work OR create a new database and edit the URL to have its name!
+## database called songs_data
+## this URI specifies the URI you're using.
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -30,22 +34,31 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 manager = Manager(app)
 # moment = Moment(app) # For time # Later
 db = SQLAlchemy(app) # For database use
+## when you use SQLAlchemy, can use SQLAlchemy
+## if using SQLAlchemy, can use db command
 
 #########
 ######### Everything above this line is important/useful setup, not problem-solving.
 #########
 
 ##### Set up Models #####
+##more complicated than section. set up association table, skip past that for now
 
 # Set up association Table between artists and albums for many-many relationship
 collections = db.Table('collections',db.Column('album_id',db.Integer, db.ForeignKey('albums.id')),db.Column('artist_id',db.Integer, db.ForeignKey('artists.id')))
+##association table between albums and artists possible called collections. now want another table definining the relationship between the two. one row for every unique artists and album combination.
+##table variable called collections, db.Table declares relationship table. one column is album id (foreign key from albums table), album id (foreign key), in either one of the tables you're referring to, need to set up relationship
+## set up album model, artist model, song model, each one model, each representing one table. album where each row is one album, table called artist where each row is one artist and song where each song is one song.
+## songs can only have one artist but an artist can have many songs. artists  can be on many albums, and an artist could have many artists (many to many)
 
 class Album(db.Model):
     __tablename__ = "albums"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
     artists = db.relationship('Artist',secondary=collections,backref=db.backref('albums',lazy='dynamic'),lazy='dynamic')
-    songs = db.relationship('Song',backref='Album')
+    ## creates association table as long as you have correct set up in table up here.
+    songs = db.relationship('Song',backref='Album') ## one to many relationship. with song table that references that album table.
+    ##albums have many songs, so we have one to many relationship
 
 class Artist(db.Model):
     __tablename__ = "artists"
@@ -90,6 +103,8 @@ def get_or_create_artist(db_session,artist_name):
         db_session.add(artist)
         db_session.commit()
         return artist
+
+    ## even if you have a unique constraint, if you try to add a title that has same title as new song, you'll get an error. i must decide to make sure that if i try to enter a song with the same title, it'll give me the other song i already saved. 
 
 def get_or_create_album(db_session, album_name, artists_list=[]):
     album = db_session.query(Album).filter_by(name=album_name).first() # by name filtering for album
@@ -149,6 +164,13 @@ def index():
 def see_all():
     all_songs = [] # To be tuple list of title, genre
     songs = Song.query.all()
+    for item in songs:
+        songs[]
+        all_songs_tuple = Song.query.filter_by(item.title), Song.query.filter_by(item.artist.id), Song.query.filter_by(item.genre)
+        all_songs.append(all_songs_tuple)
+    return render_template('all_songs.html', all_songs = all_songs)
+
+
     # Complete this view function...
     # Iterate over the songs from the query
     # For each one, query for the artist object
@@ -164,5 +186,5 @@ def see_all_artists():
 
 if __name__ == '__main__':
     db.create_all()
-    manager.run() # NEW: run with this: python main_app.py runserver
+    app.run() # NEW: run with this: python main_app.py runserver
     # Also provides more tools for debugging
